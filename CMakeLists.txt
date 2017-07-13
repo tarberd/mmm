@@ -13,3 +13,8 @@ set(OPHIDIAN_INCLUDE_DIRECTORIES
     ${OPHIDIAN_BINARY_DIR}/3rdparty/Lemon/lemon
 )
 add_subdirectory(ophidian)
+
+include_directories(OPHIDIAN_INCLUDE_DIRECTORIES)
+
+add_subdirectory(src)
+add_subdirectory(test)
