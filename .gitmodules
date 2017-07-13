@@ -1,0 +1,3 @@
+[submodule "ophidian"]
+	path = ophidian
+	url = git@github.com:eclufsc/ophidian.git
