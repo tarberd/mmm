@@ -2,4 +2,4 @@ file(GLOB src
     "*.cpp"
 )
 
-add_library(mmm ${src})
+#add_library(mmm ${src})
