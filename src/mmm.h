@@ -3,73 +3,62 @@
 
 #include <algorithm>
 #include <numeric>
-#include <utility>
+#include <iterator>
+#include <lemon/list_graph.h>
 
+using lemon::ListDigraph;
 using std::pair;
-using std::sort;
-using std::begin;
-using std::end;
 
 namespace clk_router {
-    template< class RandomIt >
-    void means_medians_y(RandomIt begin, RandomIt end, pair<float,float> first);
-    
-    template<class RandomIt>
-    pair<float,float> section_mean(RandomIt begin, RandomIt end);
-
-    template<class RandomIt>
-    RandomIt section_median(RandomIt begin, RandomIt end);
-
-    template< class RandomIt >
-    void means_medians_x(RandomIt begin, RandomIt end, pair<float,float> first)
-    {
-        sort(
-            begin, 
-            end,
-            [](const pair<float,float> & a, const pair<float,float>& b){
-                return a.first < b.first;
-            }
-        );
-
-        auto section_center = section_mean(begin, end);
-        //rout first section_center
-        auto median = section_median(begin,end);
-
-        means_medians_y(begin, median, section_center);
-        means_medians_y(median, end, section_center);
-    }
-
-    template< class RandomIt >
-    void means_medians_y(RandomIt begin, RandomIt end, pair<float,float> first)
-    {
-        sort(
-            begin, 
-            end,
-            [](const pair<float,float> & a, const pair<float,float>& b){
-                return a.second < b.second;
-            }
-        );
-
-        auto section_center = section_mean(begin, end);
-        //rout first section_center
-        auto median = section_median(begin,end);
-
-        means_medians_x(begin, median, section_center);
-        means_medians_x(median, end, section_center);
-    }
-    
-    template<class RandomIt>
-    pair<float,float> section_mean(RandomIt begin, RandomIt end){
-        auto mean = std::accumulate(begin,end, std::make_pair(0.0f,0.0f),
-                [](pair<float,float> a, pair<float,float> b){
-                    return std::make_pair(a.first + b.first, a.second + b.second);
+    template<class RandomIt, class Pair>
+    Pair region_mean(RandomIt begin, RandomIt end){
+        auto mean = std::accumulate(begin,end, Pair{0,0},
+                [](const Pair & a, const Pair & b){
+                    return Pair{a.first + b.first, a.second + b.second};
                 });
-        return {mean.first / std::distance(begin, end), mean.second / std::distance(begin,end)}; 
+        return Pair{mean.first / std::distance(begin, end), mean.second / std::distance(begin,end)}; 
     }
-           
-    template<class RandomIt>
-    RandomIt section_median(RandomIt begin, RandomIt end){
-        return begin + std::distance(begin,end) / 2;
+
+    template <typename T>
+    static const std::function< bool(pair<T,T>, Pair)> first_less_then = [](const Pair & a, const Pair & b){
+        return a.first < b.first;
+    };
+
+    template <typename T>
+    static const std::function< bool(pair<T,T>, pair<T,T>) > second_less_then = [](const Pair & a, const Pair & b){
+        return a.second < b.second;
+    };
+
+    template<
+        class RandomIt,
+        typename T 
+    >
+    void means_and_medians(
+        RandomIt begin, 
+        RandomIt end, 
+        ListDigraph::Node father, 
+        ListDigraph * clk_tree, 
+        ListDigraph::NodeMap< pair<T,T> > * node_to_pair,
+        const std::function< bool(pair<T,T>, pair<T,T>) > & comp = first_less_then<T> 
+    ){
+        auto distance = std::distance(begin,end);
+        if(distance == 0){
+            return;
+        }
+
+        auto region_mass_center = region_mean<Pair>(begin, end);
+        
+        auto son = clk_tree->addNode();
+        clk_tree->addArc(father, son);
+        (*node_to_pair)[son] = region_mass_center; 
+
+        std::sort(begin, end, comp);
+
+        auto median = begin + distance / 2;
+        comp = comp == first_less_then<Pair> ? second_less_then<Pair> : first_less_then<Pair>;
+
+        means_and_medians(begin, median, son, clk_tree, node_to_pair, comp);
+        means_and_medians(median, end, son, clk_tree, node_to_pair, comp);
     }
 };
 
