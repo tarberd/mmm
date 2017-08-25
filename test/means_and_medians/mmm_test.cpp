@@ -40,5 +40,28 @@ TEST_CASE("Routing one Point", "[clk_router][mmm]"){
 }
 
 TEST_CASE("Routing many Points", "[clk_router][mmm]"){
-    
+    std::vector<Point> v = {Point{15.0,15.0}, Point{10.0,10.0}, Point{20.0,20.0}};
+
+    lemon::ListDigraph g;
+    auto fountain = g.addNode();
+    lemon::ListDigraph::NodeMap<Point> node_to_pin(g);
+    node_to_pin[fountain] = Point{0.0,0.0};
+
+    clk_router::means_and_medians(std::begin(v), std::end(v), fountain, &g, &node_to_pin);
+
+    REQUIRE(node_to_pin[fountain].x() == 0.0 );
+    REQUIRE(node_to_pin[fountain].y() == 0.0 );
+
+    int count = 0;
+    Node oppositeNode;
+    for(ArcIt it(g); it != lemon::INVALID; ++it){
+        Arc arc(it);
+        oppositeNode = g.oppositeNode(fountain, arc) ;
+        if(oppositeNode != lemon::INVALID){
+            REQUIRE(node_to_pin[oppositeNode].x() == 15.0 );
+            REQUIRE(node_to_pin[oppositeNode].y() == 15.0 );
+        }
+        count++;
+    }
+    REQUIRE(count == 3);
 }

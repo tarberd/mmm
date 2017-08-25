@@ -7,7 +7,6 @@
 
 #include <lemon/list_graph.h>
 #include <ophidian/geometry/Models.h>
-#include <iostream>
 
 using lemon::ListDigraph;
 using ophidian::geometry::Point;
@@ -53,7 +52,7 @@ namespace clk_router {
         auto region_mass_center = region_mean(begin, end);
         auto son = clk_tree->addNode();
         clk_tree->addArc(father, son);
-        (*node_to_pair)[son] = region_mass_center; 
+        node_to_pair->set(son, region_mass_center); 
 
         std::sort(begin, end, first_less_then<inverted>{});
 
