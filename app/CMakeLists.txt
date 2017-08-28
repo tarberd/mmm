@@ -1,5 +1,2 @@
-
-
-add_executable(gen gen.cpp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg")
+add_executable(uniform_generator uniform_generator.cpp)
 add_executable(mmm mmm.cpp)

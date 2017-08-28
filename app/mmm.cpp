@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <cstdlib>
 
 #include <mmm.h>
 
@@ -18,19 +19,28 @@ using Arc = lemon::ListDigraph::Arc;
 using NodeIt = lemon::ListDigraph::NodeIt;
 using ArcIt = lemon::ListDigraph::ArcIt;
 
+double mahatan_distance(const Point & a, const Point & b){
+    return std::abs(a.x() - b.x()) + std::abs(a.y() - b.y());
+}
 
-int main(){
+int main(int argc, char* argv[]){
 
-    std::vector<Point> v;
-  
+    if(argc != 2){
+        std::cout << "usage: ./mmm <file>" << std::endl;
+        return -1;
+    }
+
     
-    std::ifstream myfile("input.txt");
+    std::ifstream myfile(argv[1]);
 
     if(!myfile.is_open())
     {
-        std::cout << "no input.txt" << std::endl;
+        std::cout << "no valid <file>" << std::endl;
+        return -1;
     }
 
+    std::vector<Point> v;
+    
     int x,y;
     while(myfile >> x >> y){
         v.push_back(Point{x,y});
@@ -47,9 +57,22 @@ int main(){
     clk_router::means_and_medians(std::begin(v), std::end(v), fountain, &g, &node_to_point);
 
     end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end-start;
+    std::chrono::duration<double> elapsed_seconds = end - start;
 
-    std::cout << "delta t: " << elapsed_seconds.count() << std::endl;
+    std::cout << elapsed_seconds.count() << " ";
+
+    auto distance = 0.0;
+    for(ArcIt it(g); it != lemon::INVALID; ++it){
+        Arc arc(it);
+        auto father = g.source(arc);
+        auto son = g.target(arc);
+        //std::cout << node_to_point[father].x() << " " << node_to_point[father].y() << std::endl;
+        //std::cout << node_to_point[son].x() << " " << node_to_point[son].y() << std::endl;
+        
+        distance += mahatan_distance(node_to_point[father], node_to_point[son]);
+        //std::cout << distance << std::endl;
+    }
+    std::cout << distance << std::endl;
 
     return 0;
 }
