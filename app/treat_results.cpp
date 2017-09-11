@@ -14,10 +14,10 @@ double region_mean(RandomIt begin, RandomIt end){
 }
 
 template<class RandomIt>
-double std_deviation(RandomIt begin, RandomIt end, double mean){
+double std_deviation(RandomIt begin, RandomIt end,const double mean){
     auto dev = std::accumulate(begin,end, 0.0,
-            [](double init, double first) -> double {
-                return std::pow(first - mean,2) ,;
+            [mean](double init, double first) -> double {
+                return std::pow(first - mean,2);
             });
     return std::sqrt(dev / std::distance(begin,end));
 }
@@ -25,7 +25,7 @@ double std_deviation(RandomIt begin, RandomIt end, double mean){
 int main(int argc, char* argv[]){
     
     if(argc != 2){
-        std::cout << "usage: ./uniform_generator <file>" << std::endl;
+        std::cout << "usage: ./treat_results <file>" << std::endl;
         return -1;
     }
 
@@ -47,9 +47,11 @@ int main(int argc, char* argv[]){
     myfile.close();
 
     auto mean = region_mean( std::begin(v), std::end(v));
-    std::cout << "mean: " <<  << std::endl;
+    std::cout << "mean: " << mean<< std::endl;
 
-    std::cout << "std deviation: " << std_deviation(std::begin(v),std::end(v),) << std::endl;
+    std::cout << "std deviation: " << std_deviation(std::begin(v),std::end(v),mean) << std::endl;
+
+    std::cout << "wire length: " << y << std::endl;
 
     return 0;
 }
